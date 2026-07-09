@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AXIS — Cinematic Scroll</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{ --ink:#f2f4f8; --dim:#8a90a0; --bg:#04050a; --g1:#cfd6e6; --g2:#8fb7ff; --g3:#e0b483;
+    --glow-x:50%; --glow-y:42%; --glow-a:0; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);color:var(--ink);}
+  body{font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+  #scene{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;filter:contrast(1.05) saturate(1.05);}
+  #fin{position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;z-index:1;opacity:0;pointer-events:none;filter:contrast(1.05) saturate(1.05);}
+  #glow{position:fixed;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(closest-side at var(--glow-x) var(--glow-y),
+      rgba(143,183,255,calc(var(--glow-a)*0.5)) 0%, rgba(224,180,131,calc(var(--glow-a)*0.25)) 40%, transparent 72%);}
+  #fade{position:fixed;inset:0;z-index:2;background:#04050a;opacity:0;pointer-events:none;}
+  #vig{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(135% 105% at 50% 44%, transparent 55%, rgba(0,0,0,.6) 100%);}
+  #grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  #bar{position:fixed;left:0;top:0;height:3px;width:0;z-index:20;background:linear-gradient(90deg,var(--g2),var(--g3));}
+
+  #brand{position:fixed;top:2rem;left:2.6rem;z-index:20;font-family:"Cormorant Garamond",serif;font-size:1.3rem;letter-spacing:.5em;padding-left:.5em;}
+  #nav-r{position:fixed;top:2.15rem;right:2.6rem;z-index:20;font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--dim);}
+  #hint{position:fixed;bottom:1.6rem;left:50%;transform:translateX(-50%);z-index:20;font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--dim);transition:opacity .5s;}
+
+  #scroll{position:relative;z-index:10;}
+  .panel{height:400vh;position:relative;}
+  .inner{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 8vw;pointer-events:none;}
+  .inner.right{align-items:flex-end;text-align:right;}
+  .inner.center{align-items:center;text-align:center;}
+  .grad{background:linear-gradient(110deg,var(--g1),var(--g2) 45%,var(--g3));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .eyebrow{font-size:.72rem;letter-spacing:.45em;text-transform:uppercase;color:var(--g3);margin-bottom:1.2rem;opacity:0;transform:translateY(18px);}
+  .head{font-family:"Cormorant Garamond",serif;font-weight:300;font-size:clamp(2.8rem,8vw,7rem);line-height:1;text-shadow:0 2px 40px rgba(0,0,0,.72);opacity:0;transform:translateY(26px);}
+  .sub{margin-top:1.4rem;max-width:36ch;font-size:.95rem;font-weight:300;line-height:1.7;color:var(--dim);text-shadow:0 1px 20px rgba(0,0,0,.85);opacity:0;transform:translateY(20px);}
+  .inner.right .sub{margin-left:auto;} .inner.center .sub{margin-left:auto;margin-right:auto;}
+  .btn{margin-top:2rem;display:inline-block;border:1px solid var(--g3);color:var(--ink);padding:.95rem 2.5rem;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;opacity:0;transform:translateY(20px);pointer-events:auto;transition:background .4s,color .4s;}
+  .btn:hover{background:var(--g3);color:#04050a;}
+  .small{margin-top:1.3rem;color:var(--dim);font-size:.78rem;letter-spacing:.08em;opacity:0;transform:translateY(18px);}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:2.4rem;width:100%;max-width:1000px;margin:1.4rem auto 0;}
+  .stat{opacity:0;transform:translateY(20px);}
+  .stat .num{font-weight:600;font-size:clamp(2.2rem,5.5vw,4.4rem);line-height:1;}
+  .stat .lbl{margin-top:.55rem;font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);}
+  @media(max-width:760px){ .stats{grid-template-columns:repeat(2,1fr);gap:1.6rem;} }
+
+  #loader{position:fixed;inset:0;z-index:50;background:#04050a;display:flex;flex-direction:column;gap:1.1rem;align-items:center;justify-content:center;transition:opacity .9s;}
+  #loader .lbl{font-family:"Cormorant Garamond",serif;letter-spacing:.6em;font-size:1.4rem;padding-left:.6em;color:var(--ink);}
+  #loader .track{width:170px;height:1px;background:rgba(255,255,255,.12);overflow:hidden;}
+  #loader .fillbar{height:100%;width:0;background:linear-gradient(90deg,var(--g2),var(--g3));}
+  #loader .pct{font-size:.7rem;letter-spacing:.3em;color:var(--g3);}
+</style>
+</head>
+<body>
+
+<div id="brand">AXIS</div>
+<div id="nav-r">Electric Hypercar · 2026</div>
+<canvas id="scene"></canvas>
+<video id="fin" muted loop playsinline preload="auto"><source src="car8.mp4" type="video/mp4"></video>
+<div id="glow"></div>
+<div id="fade"></div>
+<div id="vig"></div>
+<div id="grain"></div>
+<div id="bar"></div>
+
+<div id="scroll">
+
+  <!-- 1 · car8 야간질주 (영상) -->
+  <section class="panel"><div class="inner">
+    <div class="eyebrow" data-rev>Zero emission · Infinite intent</div>
+    <h1 class="head" data-rev><span class="grad">Silent<br>velocity.</span></h1>
+    <p class="sub" data-rev>한 번의 충전으로 도시를 가른다. 1,020마력의 정적, 그리고 폭발.</p>
+  </div></section>
+
+  <!-- 2 · car1 등장/회전 (영상 사라지고 등장) -->
+  <section class="panel"><div class="inner">
+    <div class="eyebrow" data-rev>The unveiling</div>
+    <h1 class="head" data-rev><span class="grad">Emerging<br>from the dark.</span></h1>
+    <p class="sub" data-rev>안개를 가르며 실루엣이 드러난다. AXIS가 처음 빛을 만나는 순간.</p>
+  </div></section>
+
+  <!-- 3 · car2 측면/에어로 -->
+  <section class="panel"><div class="inner right">
+    <div class="eyebrow" data-rev>Sculpted by air</div>
+    <h1 class="head" data-rev><span class="grad">Every line<br>has a reason.</span></h1>
+    <p class="sub" data-rev>연속형 LED 시그니처와 액티브 에어로. 공기저항계수 0.19가 빛을 흘려보냅니다.</p>
+  </div></section>
+
+  <!-- 4 · car3 디테일 + 스펙 -->
+  <section class="panel"><div class="inner center">
+    <div class="eyebrow" data-rev>The numbers</div>
+    <div class="stats">
+      <div class="stat" data-rev><div class="num grad" data-to="1020"></div><div class="lbl">Horsepower</div></div>
+      <div class="stat" data-rev><div class="num grad" data-to="2.1" data-dec="1" data-suffix="s"></div><div class="lbl">0–100 km/h</div></div>
+      <div class="stat" data-rev><div class="num grad" data-to="412"></div><div class="lbl">Top speed km/h</div></div>
+      <div class="stat" data-rev><div class="num grad" data-to="680"></div><div class="lbl">Range km</div></div>
+    </div>
+  </div></section>
+
+  <!-- 5 · car4 분해 -->
+  <section class="panel"><div class="inner">
+    <div class="eyebrow" data-rev>The anatomy</div>
+    <h1 class="head" data-rev><span class="grad">Every part,<br>intentional.</span></h1>
+    <p class="sub" data-rev>분해하면 보입니다 — 군더더기 없는 패키징, 무게중심을 향한 모든 결정.</p>
+  </div></section>
+
+  <!-- 6 · car5 운전석 -->
+  <section class="panel"><div class="inner right">
+    <div class="eyebrow" data-rev>Step inside</div>
+    <h1 class="head" data-rev><span class="grad">The cockpit<br>wakes for you.</span></h1>
+    <p class="sub" data-rev>요크를 잡는 순간 계기판이 살아납니다. 운전자를 중심으로 설계된 공간.</p>
+  </div></section>
+
+  <!-- 7 · car7 엔진/배터리 + CTA (피날레) -->
+  <section class="panel"><div class="inner center">
+    <div class="eyebrow" data-rev>Under the skin</div>
+    <h1 class="head" data-rev><span class="grad">Power,<br>made visible.</span></h1>
+    <span class="btn" data-rev>Configure →</span>
+    <div class="small" data-rev>800V 아키텍처와 액체냉각 셀 — 제품·공간을 시네마틱 인터랙티브로. 문의는 DM.</div>
+  </div></section>
+
+</div>
+
+<div id="hint">Scroll slowly</div>
+<div id="loader">
+  <div class="lbl">AXIS</div>
+  <div class="track"><div class="fillbar" id="fillbar"></div></div>
+  <div class="pct" id="pct">0%</div>
+</div>
+
+<script>
+/* ===================================================================
+   AXIS · Cinematic Scroll — 검증된 단일 글로벌 스크럽 엔진 (순수 바닐라)
+   시퀀스 추가: SETS에 {dir,n} 추가 + #scroll에 <section class="panel"> 한 칸.
+   N은 SETS.length로 자동 계산 → 하드코딩 없음.
+=================================================================== */
+const SETS = [
+  { video:"car8.mp4" },    // 1 HERO · 야간 질주 (영상)
+  { dir:"car1/", n:120 },  // 2 등장/회전 (영상 사라지고 car1 등장)
+  { dir:"car2/", n:120 },  // 3 측면/에어로
+  { dir:"car3/", n:120 },  // 4 디테일(+스펙)
+  { dir:"car4/", n:121 },  // 5 분해
+  { dir:"car5/", n:145 },  // 6 운전석
+  { dir:"car7/", n:121 },  // 7 엔진/배터리 (피날레)
+];
+const N = SETS.length;
+const PAD = 3;
+const canvas=document.getElementById("scene"), ctx=canvas.getContext("2d");
+const fade=document.getElementById("fade"), bar=document.getElementById("bar");
+const fin=document.getElementById("fin");
+const hint=document.getElementById("hint"), root=document.documentElement;
+const pctEl=document.getElementById("pct"), fillbar=document.getElementById("fillbar");
+
+/* ---- 프리로드 ---- */
+let total=SETS.reduce((a,s)=>a+(s.n||0),0), loaded=0, ready=false;
+SETS.forEach(s=>{
+  if(s.video) return;
+  s.imgs=new Array(s.n);
+  for(let i=0;i<s.n;i++){
+    const im=new Image();
+    im.onload=im.onerror=()=>{ loaded++; const p=Math.round(loaded/total*100);
+      pctEl.textContent=p+"%"; fillbar.style.width=p+"%";
+      if(loaded===total){ ready=true; hideLoader(); } };
+    im.src=s.dir+"f"+String(i+1).padStart(PAD,"0")+".jpg";
+    s.imgs[i]=im;
+  }
+});
+function hideLoader(){ const l=document.getElementById("loader"); if(l){ l.style.opacity=0; setTimeout(()=>l.remove(),900);} }
+setTimeout(hideLoader, 30000);
+
+/* ---- 캔버스 ---- */
+function resize(){ const d=Math.min(devicePixelRatio,2);
+  canvas.width=innerWidth*d; canvas.height=innerHeight*d;
+  canvas.style.width=innerWidth+"px"; canvas.style.height=innerHeight+"px"; }
+resize(); addEventListener("resize", resize);
+function drawCover(img){ if(!img||!img.complete||!img.naturalWidth) return;
+  const cw=canvas.width, ch=canvas.height, ir=img.naturalWidth/img.naturalHeight, cr=cw/ch;
+  let w,h,x,y; if(ir>cr){ h=ch; w=ch*ir; x=(cw-w)/2; y=0; } else { w=cw; h=cw/ir; x=0; y=(ch-h)/2; }
+  ctx.drawImage(img,x,y,w,h); }
+
+/* ---- 스크롤 = 타임코드 (단일 글로벌 매핑) ---- */
+let target=0, cur=0;
+function onScroll(){ const max=document.body.scrollHeight-innerHeight; target=max>0?scrollY/max:0; }
+addEventListener("scroll", onScroll, {passive:true}); onScroll();
+
+function raf(){
+  cur += (target-cur)*0.06;
+  const g=Math.max(0, Math.min(N-0.0001, cur*N));   // 0 ~ N
+  const si=Math.floor(g), local=g-si, set=SETS[si];
+  if(set && set.video){
+    fin.style.opacity=1;
+    if(fin.paused) fin.play().catch(()=>{});
+  } else {
+    fin.style.opacity=0;
+    if(ready && set){ drawCover(set.imgs[Math.round(local*(set.n-1))]); }
+  }
+
+  /* 시퀀스 경계(정수 g)에서만 짧은 블랙 페이드 — 같은 컷 안에선 0 */
+  const nearEdge=Math.abs(g-Math.round(g));
+  const innerEdge=(g>0.5 && g<N-0.5);
+  fade.style.opacity = innerEdge ? Math.max(0, 1-nearEdge/0.06) : 0;
+
+  /* 스크롤 반응 글로우 */
+  root.style.setProperty("--glow-a", (0.25+0.55*Math.abs(Math.sin(g*Math.PI))).toFixed(3));
+  root.style.setProperty("--glow-x", (42+local*16).toFixed(1)+"%");
+
+  bar.style.width=(cur*100)+"%";
+  hint.style.opacity = cur>0.02 ? 0 : 1;
+  requestAnimationFrame(raf);
+}
+raf();
+
+/* ---- 카피 등장 (IntersectionObserver) ---- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){
+  e.target.style.transition="opacity 1.1s ease, transform 1.1s cubic-bezier(.16,1,.3,1)";
+  e.target.style.opacity=1; e.target.style.transform="translateY(0)";
+  const num=e.target.querySelector?.(".num[data-to]"); if(num) countUp(num);
+  io.unobserve(e.target);
+}}), {threshold:0.45});
+[...document.querySelectorAll("[data-rev]")].forEach(r=>io.observe(r));
+
+/* ---- 카운트업 ---- */
+function countUp(el){
+  const to=parseFloat(el.dataset.to), dec=parseInt(el.dataset.dec||"0"), suf=el.dataset.suffix||"";
+  let st=null; const dur=1600;
+  function step(ts){ if(!st)st=ts; const p=Math.min(1,(ts-st)/dur), e=1-Math.pow(1-p,3), v=to*e;
+    el.textContent=(dec?v.toFixed(dec):Math.round(v).toLocaleString())+suf; if(p<1)requestAnimationFrame(step); }
+  requestAnimationFrame(step);
+}
+</script>
+</body>
+</html>

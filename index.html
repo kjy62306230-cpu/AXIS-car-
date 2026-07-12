@@ -94,7 +94,28 @@
     <p class="sub" data-rev>연속형 LED 시그니처와 액티브 에어로. 공기저항계수 0.19가 빛을 흘려보냅니다.</p>
   </div></section>
 
-  <!-- 4 · car3 디테일 + 스펙 -->
+  <!-- 4 · car4 분해 -->
+  <section class="panel"><div class="inner">
+    <div class="eyebrow" data-rev>The anatomy</div>
+    <h1 class="head" data-rev><span class="grad">Every part,<br>intentional.</span></h1>
+    <p class="sub" data-rev>분해하면 보입니다 — 군더더기 없는 패키징, 무게중심을 향한 모든 결정.</p>
+  </div></section>
+
+  <!-- 5 · car5 운전석 -->
+  <section class="panel"><div class="inner right">
+    <div class="eyebrow" data-rev>Step inside</div>
+    <h1 class="head" data-rev><span class="grad">The cockpit<br>wakes for you.</span></h1>
+    <p class="sub" data-rev>요크를 잡는 순간 계기판이 살아납니다. 운전자를 중심으로 설계된 공간.</p>
+  </div></section>
+
+  <!-- 6 · car7 엔진/배터리 -->
+  <section class="panel"><div class="inner">
+    <div class="eyebrow" data-rev>Under the skin</div>
+    <h1 class="head" data-rev><span class="grad">Power,<br>made visible.</span></h1>
+    <p class="sub" data-rev>800V 아키텍처와 액체냉각 셀. 보이지 않던 공학을 드러냅니다.</p>
+  </div></section>
+
+  <!-- 7 · car3 휠→리빌 (FINALE · 스펙 + CTA) -->
   <section class="panel"><div class="inner center">
     <div class="eyebrow" data-rev>The numbers</div>
     <div class="stats">
@@ -103,28 +124,8 @@
       <div class="stat" data-rev><div class="num grad" data-to="412"></div><div class="lbl">Top speed km/h</div></div>
       <div class="stat" data-rev><div class="num grad" data-to="680"></div><div class="lbl">Range km</div></div>
     </div>
-  </div></section>
-
-  <!-- 5 · car4 분해 -->
-  <section class="panel"><div class="inner">
-    <div class="eyebrow" data-rev>The anatomy</div>
-    <h1 class="head" data-rev><span class="grad">Every part,<br>intentional.</span></h1>
-    <p class="sub" data-rev>분해하면 보입니다 — 군더더기 없는 패키징, 무게중심을 향한 모든 결정.</p>
-  </div></section>
-
-  <!-- 6 · car5 운전석 -->
-  <section class="panel"><div class="inner right">
-    <div class="eyebrow" data-rev>Step inside</div>
-    <h1 class="head" data-rev><span class="grad">The cockpit<br>wakes for you.</span></h1>
-    <p class="sub" data-rev>요크를 잡는 순간 계기판이 살아납니다. 운전자를 중심으로 설계된 공간.</p>
-  </div></section>
-
-  <!-- 7 · car7 엔진/배터리 + CTA (피날레) -->
-  <section class="panel"><div class="inner center">
-    <div class="eyebrow" data-rev>Under the skin</div>
-    <h1 class="head" data-rev><span class="grad">Power,<br>made visible.</span></h1>
     <span class="btn" data-rev>Configure →</span>
-    <div class="small" data-rev>800V 아키텍처와 액체냉각 셀 — 제품·공간을 시네마틱 인터랙티브로. 문의는 DM.</div>
+    <div class="small" data-rev>제품·공간을 시네마틱 인터랙티브로 — 문의는 DM.</div>
   </div></section>
 
 </div>
@@ -143,13 +144,13 @@
    N은 SETS.length로 자동 계산 → 하드코딩 없음.
 =================================================================== */
 const SETS = [
-  { dir:"car8/", n:121 },  // 1 HERO · 야간 질주 (프레임 스크럽)
-  { dir:"car1/", n:120 },  // 2 등장/회전 (영상 사라지고 car1 등장)
+  { dir:"car8/", n:121 },  // 1 HERO · 야간 질주
+  { dir:"car1/", n:120 },  // 2 등장/회전
   { dir:"car2/", n:120 },  // 3 측면/에어로
-  { dir:"car3/", n:120 },  // 4 디테일(+스펙)
-  { dir:"car4/", n:121 },  // 5 분해
-  { dir:"car5/", n:145 },  // 6 운전석
-  { dir:"car7/", n:121 },  // 7 엔진/배터리 (피날레)
+  { dir:"car4/", n:121 },  // 4 분해
+  { dir:"car5/", n:145 },  // 5 운전석
+  { dir:"car7/", n:121 },  // 6 엔진/배터리
+  { dir:"car3/", n:120 },  // 7 디테일 리빌 (피날레 · 스펙+CTA)
 ];
 const N = SETS.length;
 const PAD = 3;
